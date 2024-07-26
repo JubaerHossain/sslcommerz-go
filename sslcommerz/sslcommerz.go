@@ -31,11 +31,11 @@ func NewSSLCommerz() *SSLCommerz {
 
 	if config.IS_SANDBOX == "false" {
 		sslc.sslcMode = "securepay"
-		sslc.sslcSubmitURL = "https://securepay.sslcommerz.com/gwprocess/v4/api.php"
+		sslc.sslcSubmitURL = "https://securepay.sslcommerz.com/gwprocess/v3/api.php"
 		sslc.sslcValidationURL = "https://securepay.sslcommerz.com/validator/api/validationserverAPI.php"
 	} else {
 		sslc.sslcMode = "sandbox"
-		sslc.sslcSubmitURL = "https://sandbox.sslcommerz.com/gwprocess/v4/api.php"
+		sslc.sslcSubmitURL = "https://sandbox.sslcommerz.com/gwprocess/v3/api.php"
 		sslc.sslcValidationURL = "https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php"
 	}
 
