@@ -2,7 +2,6 @@ package sslcommerz
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 )
@@ -70,7 +69,7 @@ func MakePaymentRequest(w http.ResponseWriter, r *http.Request) {
 	response, err := sslc.InitiatePayment(paymentRequest)
 	if err != nil {
 		log.Fatalf("Error initiating payment: %v", err)
-		return 
+		return
 	}
 
 	returnURL := response["GatewayPageURL"].(string)
