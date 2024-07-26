@@ -1,95 +1,70 @@
 package client
 
 import (
+	"bytes"
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
-	"strings"
+	"time"
 
 	"github.com/JubaerHossain/sslcommerz-go/config"
 )
 
+// Client represents an HTTP client
 type Client struct {
 	HttpClient *http.Client
 }
 
+// NewClient creates a new instance of Client
 func NewClient() *Client {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: config.IS_SANDBOX == "true", // Adjust based on environment
+		},
+	}
 	return &Client{
-		HttpClient: &http.Client{},
+		HttpClient: &http.Client{Transport: tr},
 	}
 }
 
-func (c *Client) MakeRequest(method, url string, payload interface{}) ([]byte, error) {
-	var reqBody []byte
+// MakeRequest sends an HTTP request with the given method, URL, and payload
+func (c *Client) MakeRequest(method, url string, payload map[string]interface{}) ([]byte, error) {
+	// var reqBody []byte
 	var err error
 
-	if payload != nil {
-		reqBody, err = json.Marshal(payload)
-		if err != nil {
-			return nil, err
+	var buffer bytes.Buffer
+	writer := multipart.NewWriter(&buffer)
+
+	for key, value := range payload {
+		if err := writer.WriteField(key, fmt.Sprint(value)); err != nil {
+			return nil, fmt.Errorf("failed to write field %s: %v", key, err)
 		}
 	}
 
-	fmt.Println(string(reqBody))
+	writer.Close()
 
-	fmt.Println("Making request to:", url)
+	// Send the POST request
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
 
-	fmt.Println("")
-	fmt.Println("")
-	fmt.Println("method:", method)
-	fmt.Println("")
-	fmt.Println("")
-	fmt.Println("")
-	fmt.Println("")
-
-	reader := strings.NewReader(`{
-		"store_id": "impex60a637af47d85",
-		"store_passwd": "impex60a637af47d85@ssl",
-		"total_amount": "100.00",
-		"currency":     "BDT",
-		"tran_id":      "12345",
-		"value_a":      "ref001_A",
-		"value_b":      "ref002_B",
-		"value_c":      "ref003_C",
-		"cus_name":     "John Doe",
-		"cus_add1":     "Dhaka, Bangladesh",
-		"cus_city":     "Dhaka",
-		"cus_postcode": "1000",
-		"cus_country":  "Bangladesh",
-		"cus_phone":    "01764824731",
-		"cus_email":    "john.doe@example.com",
-		"success_url":  "http://localhost:8080/success",
-		"fail_url":     "http://localhost:8080/fail",
-		"cancel_url":   "http://localhost:8080/cancel",
-		"ipn_url":      "http://localhost:8080/ipn",
-	}`)
-
-	req, err := http.NewRequest(method, url, reader)
+	req, err := http.NewRequest("POST", url, &buffer)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create request: %v", err)
 	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
 
-	req.Header.Set("Content-Type", "application/json")
-
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: config.IS_SANDBOX == "true",
-		},
-	}
-	client := &http.Client{Transport: tr}
-
-	resp, err := client.Do(req)
+	resp2, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to send request: %v", err)
 	}
-	defer resp.Body.Close()
+	defer resp2.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+	body, err2 := io.ReadAll(resp2.Body)
+	if err2 != nil {
+		return nil, fmt.Errorf("error reading response body: %v", err2)
 	}
-
 	return body, nil
 }

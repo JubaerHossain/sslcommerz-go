@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 )
 
 // SuccessHandler handles the success response from SSLCommerz
@@ -45,69 +46,87 @@ func IPNHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("IPN Received"))
 }
 
+func GenerateUniqueID() string {
+	return fmt.Sprintf("%d", time.Now().UnixNano())
+}
+
 func MakePaymentRequest(w http.ResponseWriter, r *http.Request) {
+	// Create the payment request payload
 	paymentRequest := map[string]interface{}{
-		"total_amount": "100.00",
-		"currency":     "BDT",
-		"tran_id":      "12345",
-		"value_a":      "ref001_A",
-		"value_b":      "ref002_B",
-		"value_c":      "ref003_C",
-		"cus_name":     "John Doe",
-		"cus_add1":     "Dhaka, Bangladesh",
-		"cus_city":     "Dhaka",
-		"cus_postcode": "1000",
-		"cus_country":  "Bangladesh",
-		"cus_phone":    "01764824731",
-		"cus_email":    "john.doe@example.com",
-		"success_url":  "http://localhost:8080/success",
-		"fail_url":     "http://localhost:8080/fail",
-		"cancel_url":   "http://localhost:8080/cancel",
-		"ipn_url":      "http://localhost:8080/ipn",
+		"total_amount":        "103",
+		"currency":            "BDT",
+		"tran_id":             "SSLCZ_TEST_" + GenerateUniqueID(),
+		"success_url":         "http://localhost:8080/success",
+		"fail_url":            "http://localhost:8080/fail",
+		"cancel_url":          "http://localhost:8080/cancel",
+		"ipn_url":             "http://localhost:8080/ipn",
+		"emi_option":          "1",
+		"emi_max_inst_option": "9",
+		"emi_selected_inst":   "9",
+		"cus_name":            "Test Customer",
+		"cus_email":           "test@test.com",
+		"cus_add1":            "Dhaka",
+		"cus_add2":            "Dhaka",
+		"cus_city":            "Dhaka",
+		"cus_state":           "Dhaka",
+		"cus_postcode":        "1000",
+		"cus_country":         "Bangladesh",
+		"cus_phone":           "01711111111",
+		"cus_fax":             "01711111111",
+		"shipping_method":     "No",
+		"ship_name":           "Store Test",
+		"ship_add1":           "Dhaka",
+		"ship_add2":           "Dhaka",
+		"ship_city":           "Dhaka",
+		"ship_state":          "Dhaka",
+		"ship_postcode":       "1000",
+		"ship_country":        "Bangladesh",
+		"value_a":             "ref001",
+		"value_b":             "ref002",
+		"value_c":             "ref003",
+		"value_d":             "ref004",
+		"product_name":        "Computer",
+		"product_category":    "Goods",
+		"product_profile":     "physical-goods",
 	}
 
+	// Initialize SSLCommerz client
 	sslc := NewSSLCommerz()
 	response, err := sslc.InitiatePayment(paymentRequest)
 	if err != nil {
-		fmt.Println("Error initiating payment:", err)
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "Internal Server Error 1",
-		})
+		log.Printf("Error initiating payment: %v", err)
+		http.Error(w, "Internal Server Error: Payment initiation failed", http.StatusInternalServerError)
 		return
 	}
 
-	fmt.Println("response", response)
-
-	if status, ok := response["status"].(string); ok && status == "SUCCESS" {
-		gatewayURL, ok := response["GatewayPageURL"].(string)
-		if !ok || gatewayURL == "" {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"error": "Invalid GatewayPageURL in response",
-			})
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		err := json.NewEncoder(w).Encode(map[string]interface{}{
-			"message":     "Payment initiated successfully",
-			"gateway_url": gatewayURL,
-		})
-		if err != nil {
-			http.Error(w, "Internal Server Error 2 ", http.StatusInternalServerError)
-			return
-		}
-
-		fmt.Println("Payment initiated successfully")
-		http.Redirect(w, r, gatewayURL, http.StatusFound)
-	} else {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "Failed to initiate payment",
-		})
+	// Check if the payment initiation was successful
+	status, ok := response["status"].(string)
+	if !ok || status != "SUCCESS" {
+		log.Printf("Payment initiation failed with status: %v", status)
+		http.Error(w, "Payment initiation failed", http.StatusInternalServerError)
+		return
 	}
+
+	// Extract the gateway URL from the response
+	gatewayURL, ok := response["GatewayPageURL"].(string)
+	if !ok || gatewayURL == "" {
+		log.Printf("Invalid or missing GatewayPageURL in response: %v", response)
+		http.Error(w, "Invalid GatewayPageURL in response", http.StatusInternalServerError)
+		return
+	}
+
+	// Send success response and redirect to the gateway URL
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(map[string]interface{}{
+		"message":     "Payment initiated successfully",
+		"gateway_url": gatewayURL,
+	})
+	if err != nil {
+		log.Printf("Error encoding JSON response: %v", err)
+		http.Error(w, "Internal Server Error: Failed to encode JSON response", http.StatusInternalServerError)
+		return
+	}
+
+	// Redirect to the gateway URL
+	http.Redirect(w, r, gatewayURL, http.StatusSeeOther)
 }

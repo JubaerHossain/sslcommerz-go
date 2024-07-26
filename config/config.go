@@ -1,8 +1,8 @@
 package config
 
 var (
-	StoreID    = "impex60a637af47d85"
-	StorePass  = "impex60a637af47d85@ssl"
+	StoreID    = "testbox"
+	StorePass  = "qwerty"
 	IS_SANDBOX = "true"
 	// StoreID     = os.Getenv("SSLCOMMERZ_STORE_ID")
 	// StorePass   = os.Getenv("SSLCOMMERZ_STORE_PASS")

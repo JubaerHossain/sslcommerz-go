@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/url"
 	"sort"
 	"strings"
@@ -35,7 +34,7 @@ func NewSSLCommerz() *SSLCommerz {
 		sslc.sslcValidationURL = "https://securepay.sslcommerz.com/validator/api/validationserverAPI.php"
 	} else {
 		sslc.sslcMode = "sandbox"
-		sslc.sslcSubmitURL = "https://sandbox.sslcommerz.com/gwprocess/v3/api.php"
+		sslc.sslcSubmitURL = "https://sandbox.sslcommerz.com/gwprocess/v4/api.php"
 		sslc.sslcValidationURL = "https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php"
 	}
 
@@ -52,12 +51,6 @@ func (s *SSLCommerz) InitiatePayment(postData map[string]interface{}) (map[strin
 		return nil, err
 	}
 
-	fmt.Println("")
-	fmt.Println("")
-	fmt.Println("Response:", string(response))
-	fmt.Println("")
-	fmt.Println("")
-
 	var result map[string]interface{}
 	err = json.Unmarshal(response, &result)
 	if err != nil {
@@ -66,7 +59,7 @@ func (s *SSLCommerz) InitiatePayment(postData map[string]interface{}) (map[strin
 
 	if status, ok := result["status"].(string); ok && status == "SUCCESS" {
 		return result, nil
-	}else if status, ok := result["status"].(string); ok && status == "FAILED" {
+	} else if status, ok := result["status"].(string); ok && status == "FAILED" {
 		return result, nil
 	} else if status, ok := result["status"].(string); ok && status == "CANCELLED" {
 		return result, nil
