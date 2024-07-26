@@ -66,6 +66,10 @@ func (s *SSLCommerz) InitiatePayment(postData map[string]interface{}) (map[strin
 
 	if status, ok := result["status"].(string); ok && status == "SUCCESS" {
 		return result, nil
+	}else if status, ok := result["status"].(string); ok && status == "FAILED" {
+		return result, nil
+	} else if status, ok := result["status"].(string); ok && status == "CANCELLED" {
+		return result, nil
 	}
 
 	return nil, errors.New("failed to initiate payment")
