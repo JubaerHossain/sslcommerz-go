@@ -1,12 +1,12 @@
 package client
 
 import (
-	"bytes"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/JubaerHossain/sslcommerz-go/config"
 )
@@ -44,8 +44,29 @@ func (c *Client) MakeRequest(method, url string, payload interface{}) ([]byte, e
 	fmt.Println("")
 	fmt.Println("")
 
+	reader := strings.NewReader(`{
+		"store_id": "impex60a637af47d85",
+		"store_passwd": "impex60a637af47d85@ssl",
+		"total_amount": "100.00",
+		"currency":     "BDT",
+		"tran_id":      "12345",
+		"value_a":      "ref001_A",
+		"value_b":      "ref002_B",
+		"value_c":      "ref003_C",
+		"cus_name":     "John Doe",
+		"cus_add1":     "Dhaka, Bangladesh",
+		"cus_city":     "Dhaka",
+		"cus_postcode": "1000",
+		"cus_country":  "Bangladesh",
+		"cus_phone":    "01764824731",
+		"cus_email":    "john.doe@example.com",
+		"success_url":  "http://localhost:8080/success",
+		"fail_url":     "http://localhost:8080/fail",
+		"cancel_url":   "http://localhost:8080/cancel",
+		"ipn_url":      "http://localhost:8080/ipn",
+	}`)
 
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(reqBody))
+	req, err := http.NewRequest(method, url, reader)
 	if err != nil {
 		return nil, err
 	}
