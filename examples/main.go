@@ -20,7 +20,7 @@ func main() {
         "cus_city":     "Dhaka",
         "cus_postcode": "1000",
         "cus_country":  "Bangladesh",
-        "cus_phone":    "01764824777",
+        "cus_phone":    "017********",
         "cus_email":    "john.doe@example.com",
         "success_url":  "http://localhost:8080/success",
         "fail_url":     "http://localhost:8080/fail",
