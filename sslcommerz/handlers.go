@@ -50,8 +50,8 @@ func GenerateUniqueID() string {
 	return fmt.Sprintf("%d", time.Now().UnixNano())
 }
 
+// MakePaymentRequest handles the payment request to SSLCommerz.
 func MakePaymentRequest(w http.ResponseWriter, r *http.Request) {
-	// Create the payment request payload
 	paymentRequest := map[string]interface{}{
 		"total_amount":        "103",
 		"currency":            "BDT",
@@ -90,7 +90,6 @@ func MakePaymentRequest(w http.ResponseWriter, r *http.Request) {
 		"product_profile":     "physical-goods",
 	}
 
-	// Initialize SSLCommerz client
 	sslc := NewSSLCommerz()
 	response, err := sslc.InitiatePayment(paymentRequest)
 	if err != nil {
@@ -99,7 +98,6 @@ func MakePaymentRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if the payment initiation was successful
 	status, ok := response["status"].(string)
 	if !ok || status != "SUCCESS" {
 		log.Printf("Payment initiation failed with status: %v", status)
@@ -107,7 +105,6 @@ func MakePaymentRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Extract the gateway URL from the response
 	gatewayURL, ok := response["GatewayPageURL"].(string)
 	if !ok || gatewayURL == "" {
 		log.Printf("Invalid or missing GatewayPageURL in response: %v", response)
@@ -115,7 +112,7 @@ func MakePaymentRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Send success response and redirect to the gateway URL
+	// Send JSON response and redirect in separate paths
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(map[string]interface{}{
 		"message":     "Payment initiated successfully",
@@ -127,6 +124,6 @@ func MakePaymentRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Redirect to the gateway URL
+	// Ensure redirect occurs after sending JSON response
 	http.Redirect(w, r, gatewayURL, http.StatusSeeOther)
 }
