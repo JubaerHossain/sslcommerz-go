@@ -17,6 +17,8 @@ func SuccessHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Println(payment)
+
 	log.Println("Payment Success:", payment)
 	w.Write([]byte("Payment Successful"))
 }
