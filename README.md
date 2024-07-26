@@ -27,7 +27,7 @@ sslcommerz-go/
 
 ## Installation
 
-1. **Clone the repository**:
+1. **Install**:
    ```sh
    go get -u github.com/JubaerHossain/sslcommerz-go
    ```
