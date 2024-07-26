@@ -52,7 +52,11 @@ func (s *SSLCommerz) InitiatePayment(postData map[string]interface{}) (map[strin
 		return nil, err
 	}
 
-	fmt.Println(string(response))
+	fmt.Println("")
+	fmt.Println("")
+	fmt.Println("Response:", string(response))
+	fmt.Println("")
+	fmt.Println("")
 
 	var result map[string]interface{}
 	err = json.Unmarshal(response, &result)

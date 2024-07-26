@@ -2,6 +2,7 @@ package sslcommerz
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -68,10 +69,45 @@ func MakePaymentRequest(w http.ResponseWriter, r *http.Request) {
 	sslc := NewSSLCommerz()
 	response, err := sslc.InitiatePayment(paymentRequest)
 	if err != nil {
-		log.Fatalf("Error initiating payment: %v", err)
+		fmt.Println("Error initiating payment:", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "Internal Server Error 1",
+		})
 		return
 	}
 
-	returnURL := response["GatewayPageURL"].(string)
-	http.Redirect(w, r, returnURL, http.StatusFound)
+	fmt.Println("response", response)
+
+	if status, ok := response["status"].(string); ok && status == "SUCCESS" {
+		gatewayURL, ok := response["GatewayPageURL"].(string)
+		if !ok || gatewayURL == "" {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"error": "Invalid GatewayPageURL in response",
+			})
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
+			"message":     "Payment initiated successfully",
+			"gateway_url": gatewayURL,
+		})
+		if err != nil {
+			http.Error(w, "Internal Server Error 2 ", http.StatusInternalServerError)
+			return
+		}
+
+		fmt.Println("Payment initiated successfully")
+		http.Redirect(w, r, gatewayURL, http.StatusFound)
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "Failed to initiate payment",
+		})
+	}
 }
