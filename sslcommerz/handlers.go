@@ -113,16 +113,16 @@ func MakePaymentRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send JSON response and redirect in separate paths
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(map[string]interface{}{
-		"message":     "Payment initiated successfully",
-		"gateway_url": gatewayURL,
-	})
-	if err != nil {
-		log.Printf("Error encoding JSON response: %v", err)
-		http.Error(w, "Internal Server Error: Failed to encode JSON response", http.StatusInternalServerError)
-		return
-	}
+	// w.Header().Set("Content-Type", "application/json")
+	// err = json.NewEncoder(w).Encode(map[string]interface{}{
+	// 	"message":     "Payment initiated successfully",
+	// 	"gateway_url": gatewayURL,
+	// })
+	// if err != nil {
+	// 	log.Printf("Error encoding JSON response: %v", err)
+	// 	http.Error(w, "Internal Server Error: Failed to encode JSON response", http.StatusInternalServerError)
+	// 	return
+	// }
 
 	// Ensure redirect occurs after sending JSON response
 	http.Redirect(w, r, gatewayURL, http.StatusSeeOther)
