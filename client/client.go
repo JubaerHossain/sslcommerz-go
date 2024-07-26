@@ -2,10 +2,13 @@ package client
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/JubaerHossain/sslcommerz-go/config"
 )
 
 type Client struct {
@@ -35,10 +38,12 @@ func (c *Client) MakeRequest(method, url string, payload interface{}) ([]byte, e
 
 	fmt.Println("")
 	fmt.Println("")
+	fmt.Println("method:", method)
 	fmt.Println("")
 	fmt.Println("")
 	fmt.Println("")
 	fmt.Println("")
+
 
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(reqBody))
 	if err != nil {
@@ -47,7 +52,14 @@ func (c *Client) MakeRequest(method, url string, payload interface{}) ([]byte, e
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := c.HttpClient.Do(req)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: config.IS_SANDBOX == "true",
+		},
+	}
+	client := &http.Client{Transport: tr}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
