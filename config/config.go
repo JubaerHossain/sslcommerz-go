@@ -1,9 +1,10 @@
 package config
 
-import "os"
-
 var (
-	StoreID    = os.Getenv("SSLCOMMERZ_STORE_ID")
-	StorePass  = os.Getenv("SSLCOMMERZ_STORE_PASS")
-	IS_SANDBOX = os.Getenv("SSLCOMMERZ_IS_SANDBOX")
+	StoreID    = "testbox"
+	StorePass  = "qwerty"
+	IS_SANDBOX = "true"
+	// StoreID     = os.Getenv("SSLCOMMERZ_STORE_ID")
+	// StorePass   = os.Getenv("SSLCOMMERZ_STORE_PASS")
+	// IS_SANDBOX  = os.Getenv("SSLCOMMERZ_IS_SANDBOX")
 )

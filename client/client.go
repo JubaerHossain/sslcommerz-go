@@ -7,9 +7,11 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"reflect"
 	"time"
 
 	"github.com/JubaerHossain/sslcommerz-go/config"
+	sslcommerzEntity "github.com/JubaerHossain/sslcommerz-go/pkg"
 )
 
 // Client represents an HTTP client
@@ -30,24 +32,31 @@ func NewClient() *Client {
 }
 
 // MakeRequest sends an HTTP request with the given method, URL, and payload
-func (c *Client) MakeRequest(method, url string, payload map[string]interface{}) ([]byte, error) {
+func (c *Client) MakeRequest(method, url string, payload *sslcommerzEntity.PaymentRequest) ([]byte, error) {
 	// var reqBody []byte
 	var err error
 
 	var buffer bytes.Buffer
 	writer := multipart.NewWriter(&buffer)
 
-	for key, value := range payload {
-		if err := writer.WriteField(key, fmt.Sprint(value)); err != nil {
-			return nil, fmt.Errorf("failed to write field %s: %v", key, err)
+	v := reflect.ValueOf(payload)
+	t := reflect.TypeOf(payload)
+
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		fieldName := t.Field(i).Tag.Get("json")
+
+		if err := writer.WriteField(fieldName, fmt.Sprint(field.Interface())); err != nil {
+			return nil, fmt.Errorf("failed to write field %s: %v", fieldName, err)
 		}
 	}
 
-	writer.Close()
-
+	if err := writer.Close(); err != nil {
+		return nil, fmt.Errorf("failed to close writer: %v", err)
+	}
 	// Send the POST request
 	client := &http.Client{
-		Timeout: 30 * time.Second,
+		Timeout: 60 * time.Second,
 	}
 
 	req, err := http.NewRequest("POST", url, &buffer)

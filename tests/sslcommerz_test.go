@@ -2,35 +2,57 @@
 package tests
 
 import (
-    "testing"
-    "github.com/JubaerHossain/sslcommerz-go/sslcommerz"
+	"fmt"
+	"testing"
+	"time"
+
+	sslcommerzEntity "github.com/JubaerHossain/sslcommerz-go/pkg"
+	"github.com/JubaerHossain/sslcommerz-go/sslcommerz"
 )
 
 func TestInitiatePayment(t *testing.T) {
-    paymentRequest := map[string]interface{}{
-        "total_amount": "100.00",
-        "currency":     "BDT",
-        "tran_id":      "12345",
-        "success_url":  "http://localhost:8080/success",
-        "fail_url":     "http://localhost:8080/fail",
-        "cancel_url":   "http://localhost:8080/cancel",
-        "ipn_url":      "http://localhost:8080/ipn",
-        "cus_name":     "John Doe",
-        "cus_add1":     "123 Main St",
-        "cus_city":     "Dhaka",
-        "cus_postcode": "1000",
-        "cus_country":  "Bangladesh",
-        "cus_phone":    "017xxxxxxxx",
-        "cus_email":    "john.doe@example.com",
-    }
+	paymentRequest := &sslcommerzEntity.PaymentRequest{
+		TotalAmount:      103,
+		Currency:         "BDT",
+		TransactionID:    "SSLCZ_TEST_" + fmt.Sprintf("%d", time.Now().UnixNano()),
+		SuccessURL:       "http://localhost:8080/success",
+		FailURL:          "http://localhost:8080/fail",
+		CancelURL:        "http://localhost:8080/cancel",
+		IPNURL:           "http://localhost:8080/ipn",
+		CustomerName:     "Test Customer",
+		CustomerEmail:    "test@test.com",
+		CustomerAddress1: "Dhaka",
+		CustomerAddress2: "Dhaka",
+		CustomerCity:     "Dhaka",
+		CustomerState:    "Dhaka",
+		CustomerPostcode: "1000",
+		CustomerCountry:  "Bangladesh",
+		CustomerPhone:    "01711111111",
+		CustomerFax:      "01711111111",
+		ShippingMethod:   "No",
+		ShippingName:     "Store Test",
+		ShippingAddress1: "Dhaka",
+		ShippingAddress2: "Dhaka",
+		ShippingCity:     "Dhaka",
+		ShippingState:    "Dhaka",
+		ShippingPostcode: "1000",
+		ShippingCountry:  "Bangladesh",
+		ValueA:           "ref001",
+		ValueB:           "ref002",
+		ValueC:           "ref003",
+		ValueD:           "ref004",
+		ProductName:      "Computer",
+		ProductCategory:  "Goods",
+		ProductProfile:   "physical-goods",
+	}
 
-    sslc := sslcommerz.NewSSLCommerz()
-    response, err := sslc.InitiatePayment(paymentRequest)
-    if err != nil {
-        t.Fatalf("Error initiating payment: %v", err)
-    }
+	sslc := sslcommerz.NewSSLCommerz()
+	response, err := sslc.InitiatePayment(paymentRequest)
+	if err != nil {
+		t.Fatalf("Error initiating payment: %v", err)
+	}
 
-    if status, ok := response["status"].(string); !ok || status != "SUCCESS" {
-        t.Fatalf("Expected status to be SUCCESS, got %v", status)
-    }
+	if status, ok := response["status"].(string); !ok || status != "SUCCESS" {
+		t.Fatalf("Expected status to be SUCCESS, got %v", status)
+	}
 }

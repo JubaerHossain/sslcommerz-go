@@ -90,3 +90,5 @@ func GetImage(gw string, source map[string]interface{}) (string, error) {
 
     return "", errors.New("logo not found")
 }
+
+

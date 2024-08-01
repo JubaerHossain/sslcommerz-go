@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	sslcommerzEntity "github.com/JubaerHossain/sslcommerz-go/pkg"
 	"github.com/JubaerHossain/sslcommerz-go/sslcommerz"
 )
 
@@ -95,42 +96,39 @@ func GenerateUniqueID() string {
 
 // MakePaymentRequest handles the payment request to SSLCommerz.
 func MakePaymentRequest(w http.ResponseWriter, r *http.Request) {
-	paymentRequest := map[string]interface{}{
-		"total_amount":        "103",
-		"currency":            "BDT",
-		"tran_id":             "SSLCZ_TEST_" + GenerateUniqueID(),
-		"success_url":         "http://localhost:8080/success",
-		"fail_url":            "http://localhost:8080/fail",
-		"cancel_url":          "http://localhost:8080/cancel",
-		"ipn_url":             "http://localhost:8080/ipn",
-		"emi_option":          "1",
-		"emi_max_inst_option": "9",
-		"emi_selected_inst":   "9",
-		"cus_name":            "Test Customer",
-		"cus_email":           "test@test.com",
-		"cus_add1":            "Dhaka",
-		"cus_add2":            "Dhaka",
-		"cus_city":            "Dhaka",
-		"cus_state":           "Dhaka",
-		"cus_postcode":        "1000",
-		"cus_country":         "Bangladesh",
-		"cus_phone":           "01711111111",
-		"cus_fax":             "01711111111",
-		"shipping_method":     "No",
-		"ship_name":           "Store Test",
-		"ship_add1":           "Dhaka",
-		"ship_add2":           "Dhaka",
-		"ship_city":           "Dhaka",
-		"ship_state":          "Dhaka",
-		"ship_postcode":       "1000",
-		"ship_country":        "Bangladesh",
-		"value_a":             "ref001",
-		"value_b":             "ref002",
-		"value_c":             "ref003",
-		"value_d":             "ref004",
-		"product_name":        "Computer",
-		"product_category":    "Goods",
-		"product_profile":     "physical-goods",
+	paymentRequest := &sslcommerzEntity.PaymentRequest{
+		TotalAmount:      103,
+		Currency:         "BDT",
+		TransactionID:     "SSLCZ_TEST_" + GenerateUniqueID(),
+		SuccessURL:        "http://localhost:8080/success",
+		FailURL:           "http://localhost:8080/fail",
+		CancelURL:         "http://localhost:8080/cancel",
+		IPNURL:            "http://localhost:8080/ipn",
+		CustomerName:     "Test Customer",
+		CustomerEmail:    "test@test.com",
+		CustomerAddress1: "Dhaka",
+		CustomerAddress2: "Dhaka",
+		CustomerCity:     "Dhaka",
+		CustomerState:    "Dhaka",
+		CustomerPostcode: "1000",
+		CustomerCountry:  "Bangladesh",
+		CustomerPhone:    "01711111111",
+		CustomerFax:      "01711111111",
+		ShippingMethod:   "No",
+		ShippingName:     "Store Test",
+		ShippingAddress1: "Dhaka",
+		ShippingAddress2: "Dhaka",
+		ShippingCity:     "Dhaka",
+		ShippingState:    "Dhaka",
+		ShippingPostcode: "1000",
+		ShippingCountry:  "Bangladesh",
+		ValueA:           "ref001",
+		ValueB:           "ref002",
+		ValueC:           "ref003",
+		ValueD:           "ref004",
+		ProductName:      "Computer",
+		ProductCategory:  "Goods",
+		ProductProfile:   "physical-goods",
 	}
 
 	sslc := sslcommerz.NewSSLCommerz()

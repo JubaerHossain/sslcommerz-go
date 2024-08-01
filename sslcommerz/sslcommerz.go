@@ -15,6 +15,7 @@ import (
 
 	"github.com/JubaerHossain/sslcommerz-go/client"
 	"github.com/JubaerHossain/sslcommerz-go/config"
+	sslcommerzEntity "github.com/JubaerHossain/sslcommerz-go/pkg"
 )
 
 type SSLCommerz struct {
@@ -45,10 +46,9 @@ func NewSSLCommerz() *SSLCommerz {
 	return sslc
 }
 
-func (s *SSLCommerz) InitiatePayment(postData map[string]interface{}) (map[string]interface{}, error) {
-	postData["store_id"] = s.storeID
-	postData["store_passwd"] = s.storePass
-
+func (s *SSLCommerz) InitiatePayment(postData *sslcommerzEntity.PaymentRequest) (map[string]interface{}, error) {
+	postData.StoreID = s.storeID
+	postData.StorePass = s.storePass
 	client := client.NewClient()
 	response, err := client.MakeRequest("POST", s.sslcSubmitURL, postData)
 	if err != nil {
@@ -177,11 +177,11 @@ func (s *SSLCommerz) ValidateTransaction(tranID, amount, currency string, postDa
 	}
 
 	if currency == "BDT" {
-		if tranID == postData["tran_id"].(string) && ((amountFloat-finalAmount) < 1) && currency == "BDT" {
+		if tranID == postData["tran_id"].(string) && ((amountFloat - finalAmount) < 1) && currency == "BDT" {
 			return true, nil
 		}
 	} else {
-		if tranID == postData["tran_id"].(string) && ((currencyAmount-finalAmount) < 1) && currency == fmt.Sprintf("%v", result["currency_type"]) {
+		if tranID == postData["tran_id"].(string) && ((currencyAmount - finalAmount) < 1) && currency == fmt.Sprintf("%v", result["currency_type"]) {
 			return true, nil
 		}
 	}
