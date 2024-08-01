@@ -106,6 +106,8 @@ func main() {
 	}
 
     fmt.Printf("Payment Response: %+v\n", response)
+
+    // Redirect to the payment gateway
 }
 ```
 
