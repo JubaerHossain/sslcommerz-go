@@ -7,7 +7,6 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	"reflect"
 	"time"
 
 	"github.com/JubaerHossain/sslcommerz-go/config"
@@ -39,15 +38,46 @@ func (c *Client) MakeRequest(method, url string, payload *sslcommerzEntity.Payme
 	var buffer bytes.Buffer
 	writer := multipart.NewWriter(&buffer)
 
-	v := reflect.ValueOf(payload)
-	t := reflect.TypeOf(payload)
+	fields := map[string]interface{}{
+		"store_id":         payload.StoreID,
+		"store_passwd":     payload.StorePass,
+		"total_amount":     payload.TotalAmount,
+		"currency":         payload.Currency,
+		"tran_id":          payload.TransactionID,
+		"success_url":      payload.SuccessURL,
+		"fail_url":         payload.FailURL,
+		"cancel_url":       payload.CancelURL,
+		"ipn_url":          payload.IPNURL,
+		"cus_name":         payload.CustomerName,
+		"cus_email":        payload.CustomerEmail,
+		"cus_add1":         payload.CustomerAddress1,
+		"cus_add2":         payload.CustomerAddress2,
+		"cus_city":         payload.CustomerCity,
+		"cus_state":        payload.CustomerState,
+		"cus_postcode":     payload.CustomerPostcode,
+		"cus_country":      payload.CustomerCountry,
+		"cus_phone":        payload.CustomerPhone,
+		"cus_fax":          payload.CustomerFax,
+		"shipping_method":  payload.ShippingMethod,
+		"ship_name":        payload.ShippingName,
+		"ship_add1":        payload.ShippingAddress1,
+		"ship_add2":        payload.ShippingAddress2,
+		"ship_city":        payload.ShippingCity,
+		"ship_state":       payload.ShippingState,
+		"ship_postcode":    payload.ShippingPostcode,
+		"ship_country":     payload.ShippingCountry,
+		"value_a":          payload.ValueA,
+		"value_b":          payload.ValueB, // Now handled as a string
+		"value_c":          payload.ValueC,
+		"value_d":          payload.ValueD,
+		"product_name":     payload.ProductName,
+		"product_category": payload.ProductCategory,
+		"product_profile":  payload.ProductProfile,
+	}
 
-	for i := 0; i < v.NumField(); i++ {
-		field := v.Field(i)
-		fieldName := t.Field(i).Tag.Get("json")
-
-		if err := writer.WriteField(fieldName, fmt.Sprint(field.Interface())); err != nil {
-			return nil, fmt.Errorf("failed to write field %s: %v", fieldName, err)
+	for key, value := range fields {
+		if err := writer.WriteField(key, fmt.Sprint(value)); err != nil {
+			return nil, fmt.Errorf("failed to write field %s: %v", key, err)
 		}
 	}
 
